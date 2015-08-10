@@ -1,8 +1,52 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
+# something like this should be in the crontab:
+# */1 * * * * BOT_NAME="test-server" "$HOME/hubot/bin/hubot >/tmp/hubot.log 2>&1
+ALREADY_RUNNING="`ps axo pid,command | grep -v grep | grep node_modules/.bin/hubot | awk '{print $1}' | wc -l`"
+if [[ "$ALREADY_RUNNING" -gt "0" ]] ; then
+  exit 0
+fi
+
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+cd "$DIR/.."
+
 npm install
 export PATH="node_modules/.bin:node_modules/hubot/node_modules/.bin:$PATH"
+export HUBOT_SLACK_TOKEN="`cat ~/config/hubot-slack.token | head -n 1`"
+#export HUBOT_SHELLCMD_KEYWORD='shellcmd'
 
-exec node_modules/.bin/hubot --name "test-server" "$@"
+if [[ ! -e "bash" ]] ; then
+  cp -R node_modules/hubot-script-shellcmd/bash .
+fi
+
+if [[ "$BOT_NAME" == "" ]] ; then
+  BOT_NAME="hubot"
+fi
+
+if [[ "$BOT_ICON" == "" ]] ; then
+  BOT_ICON="https://s3-us-west-2.amazonaws.com/slack-files2/avatars/2015-08-10/8878694496_9e4e1c78db905c4d3396_48.jpg"
+fi
+
+if [[ "$ANNOUNCE_CHANNEL" == "" ]] ; then
+  ANNOUNCE_CHANNEL="#general"
+fi
+
+# Announce join if slackbot webhook is defined
+if [[ -e "$HOME/config/slack.webhook" ]] ; then
+  SLACK_WEBHOOK="`cat $HOME/config/slack.webhook | head -n 1`"
+else
+  echo "No webhook defined in $HOME/config/slack.webhook - can't post join/leave message"
+fi
+
+if [[ "$SLACK_WEBHOOK" != "" ]] ; then
+  JSON="{\"channel\": \"$ANNOUNCE_CHANNEL\", \"username\": \"$BOT_NAME\", \"icon_url\": \"$BOT_ICON\", \"text\": \"I'm awake!\"}"
+  curl -s -d "payload=$JSON" "$SLACK_WEBHOOK"
+fi
+exec node_modules/.bin/hubot --name "$BOT_NAME" --adapter slack "$@"
+if [[ "$SLACK_WEBHOOK" != "" ]] ; then
+  JSON="{\"channel\": \"$ANNOUNCE_CHANNEL\", \"username\": \"$BOT_NAME\", \"icon_url\": \"$BOT_ICON\", \"text\": \"I'm shutting down...\"}"
+  curl -s -d "payload=$JSON" "$SLACK_WEBHOOK"
+fi
+

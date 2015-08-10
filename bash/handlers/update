@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+cd "$DIR/../.."
+
+git add -A && git pull origin master 2>&1 # git add to avoid overwriting unstaged changes
+if [ $? -eq 0 ]; then
+  ./die
+else
+  echo "git pull failed"
+fi
+
+exit 0

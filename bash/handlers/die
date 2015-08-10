@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -e
+
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+cd "$DIR/../.."
+
+# Announce shutdown if slackbot webhook is defined
+if [[ -e "$HOME/config/slack.webhook" ]] ; then
+  if [[ "$BOT_ICON" == "" ]] ; then
+    BOT_ICON="https://s3-us-west-2.amazonaws.com/slack-files2/avatars/2015-08-10/8878694496_9e4e1c78db905c4d3396_48.jpg"
+  fi
+  if [[ "$ANNOUNCE_CHANNEL" == "" ]] ; then
+    ANNOUNCE_CHANNEL="#general"
+  fi
+  SLACK_WEBHOOK="`cat $HOME/config/slack.webhook | head -n 1`"
+  JSON="{\"channel\": \"$ANNOUNCE_CHANNEL\", \"username\": \"$BOT_NAME\", \"icon_url\": \"$BOT_ICON\", \"text\": \"I'm shutting down...\"}"
+  curl -s -d "payload=$JSON" "$SLACK_WEBHOOK"
+else
+  echo "No webhook defined in $HOME/config/slack.webhook - can't post join/leave message"
+fi
+
+HUBOT_PID="`ps axo pid,command | grep -v grep | grep node_modules/.bin/hubot | awk '{print $1}'`"
+kill $HUBOT_PID
+
+exit 0

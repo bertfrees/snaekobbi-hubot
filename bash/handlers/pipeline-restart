@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo "Pipeline 2 not working correctly you say? Ok, I'll restart it..."
+
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+cd "$DIR"
+NO_MESSAGES=1 ./pipeline-stop
+NO_MESSAGES=1 ./pipeline-start
+
+echo "Ok, I'm done. Let's hope that did the trick..."
+
+exit 0

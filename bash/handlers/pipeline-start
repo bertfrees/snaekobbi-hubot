@@ -1,0 +1,16 @@
+#!/bin/bash
+
+if [[ "$NO_MESSAGES" == "" ]] ; then
+  echo "Excellent choice; I will start Pipeline 2 for you..."
+fi
+
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+sudo service pipeline2d start
+sudo service pipeline2-webuid start
+
+if [[ "$NO_MESSAGES" == "" ]] ; then
+  echo "Ok, I'm done. If it didn't work, try 'restart' instead."
+fi
+
+exit 0

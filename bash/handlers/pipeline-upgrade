@@ -1,0 +1,78 @@
+#!/bin/bash
+
+echo "Sure! I'll upgrade Pipeline 2 for you; the engine, Web UI, and modules."
+
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
+cd "$DIR"
+NO_MESSAGES=1 ./pipeline-stop
+
+TIMESTAMP="`date --utc --rfc-3339=seconds | sed 's/+.*//' | sed 's/ /_/g' | sed 's/[^0-9_]/-/g'`"
+if [[ -d "/var/opt/daisy-pipeline2-webui/webui/dp2webui" ]] ; then
+  mkdir -p "$HOME/webui-db-backups"
+  sudo cp -r "/var/opt/daisy-pipeline2-webui/webui/dp2webui" "$HOME/webui-db-backups/dp2webui.bak-$TIMESTAMP"
+  sudo chown -R $USER:$USER "$HOME/webui-db-backups/dp2webui.bak-$TIMESTAMP"
+fi
+
+if [[ ! -d "$HOME/system" ]] ; then
+  cd $HOME && git clone https://github.com/snaekobbi/system.git 2>&1
+  if [[ "$?" -ne "0" ]]; then
+    echo "git clone failed"
+    exit 1
+  fi
+fi
+
+cd "$HOME/system"
+git pull origin master 2>&1
+if [[ "$?" -ne "0" ]]; then
+  echo "git pull failed"
+  exit 1
+fi
+
+make >/tmp/make-test-server.log 2>&1
+RET="$?"
+if [[ "$RET" -eq "0" ]]; then
+  cat /tmp/make-test-server.log | grep wget
+else
+  echo "make failed"
+  if [[ "`cat /tmp/make-test-server.log | grep "." | wc -l`" -gt "5" ]] ; then
+    echo "5 last lines of output:"
+  else
+    echo "output:"
+  fi
+  cat /tmp/make-test-server.log | grep "." | tail -n 5
+  exit 1
+fi
+
+ansible-playbook test-server.yml >/tmp/ansible-playbook-test-server.log 2>&1
+RET="`cat /tmp/ansible-playbook-test-server.log | grep "local.*ok.*changed.*unreachable.*failed" | grep -v "failed=0" | wc -l`"
+if [[ "$RET" -ne "0" ]]; then
+  echo "ansible-playbook test-server.yml failed"
+fi
+cat /tmp/ansible-playbook-test-server.log | grep "\(TASK\|changed\)" | sed 's/\*\{3,\}//g' | grep -v 'changed=0'
+if [[ "$RET" -ne "0" ]]; then
+  if [[ "`cat /tmp/make-test-server.log | grep "." | wc -l`" -gt "5" ]] ; then
+    echo "5 last lines of unfiltered output:"
+  else
+    echo "unfiltered output:"
+  fi
+  cat /tmp/make-test-server.log | grep "." | tail -n 5
+  exit 1
+fi
+
+cd "$DIR"
+NO_MESSAGES=1 ./pipeline-stop
+
+# Restore database
+if [[ -d "$HOME/webui-db-backups/dp2webui.bak-$TIMESTAMP" ]] ; then
+  sudo rm -r "/var/opt/daisy-pipeline2-webui/webui/dp2webui"
+  sudo cp -r "$HOME/webui-db-backups/dp2webui.bak-$TIMESTAMP" "/var/opt/daisy-pipeline2-webui/webui/dp2webui"
+  sudo chown -R pipeline2-webui:pipeline2-webui "/var/opt/daisy-pipeline2-webui/webui/dp2webui"
+fi
+
+cd "$DIR"
+NO_MESSAGES=1 ./pipeline-start
+
+echo "Ok, I'm done. Let's hope that did the trick..."
+
+exit 0

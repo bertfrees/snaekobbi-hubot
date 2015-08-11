@@ -1,0 +1,6 @@
+#!/bin/bash
+
+sudo service pipeline2d status
+sudo service pipeline2-webuid status
+
+exit 0

@@ -44,6 +44,7 @@ if [[ "$SLACK_WEBHOOK" != "" ]] ; then
   JSON="{\"channel\": \"$ANNOUNCE_CHANNEL\", \"username\": \"$BOT_NAME\", \"icon_url\": \"$BOT_ICON\", \"text\": \"I'm awake!\"}"
   curl -s -d "payload=$JSON" "$SLACK_WEBHOOK"
 fi
+set +e
 exec node_modules/.bin/hubot --name "$BOT_NAME" --adapter slack "$@"
 if [[ "$SLACK_WEBHOOK" != "" ]] ; then
   JSON="{\"channel\": \"$ANNOUNCE_CHANNEL\", \"username\": \"$BOT_NAME\", \"icon_url\": \"$BOT_ICON\", \"text\": \"I'm shutting down...\"}"

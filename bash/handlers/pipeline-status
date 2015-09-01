@@ -20,6 +20,7 @@ else if [ "$ENGINE_PID" == "" ] && [ "$WEBUI_PID" != "" ]; then
 else
     top -b -n 1 -p $ENGINE_PID,$WEBUI_PID
     echo "Pipeline 2 Engine PID: $ENGINE_PID"
+    echo
     echo "Pipeline 2 Web UI PID: $WEBUI_PID"
 fi
 fi

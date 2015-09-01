@@ -3,4 +3,27 @@
 sudo service pipeline2d status
 sudo service pipeline2-webuid status
 
+ENGINE_PID="`ps aux | grep -v grep | grep daisy | grep felix.jar | awk '{print $2}'`"
+WEBUI_PID="`ps aux | grep -v grep | grep daisy | grep java | grep webui | awk '{print $2}'`"
+
+if [ "$ENGINE_PID" == "" ] && [ "$WEBUI_PID" == "" ]; then
+    echo "Could not find the PID for neither the engine nor the web ui"
+
+else if [ "$ENGINE_PID" != "" ] && [ "$WEBUI_PID" == "" ]; then
+    top -b -n 1 -p $ENGINE_PID
+    echo "Pipeline 2 Engine PID: $ENGINE_PID"
+
+else if [ "$ENGINE_PID" == "" ] && [ "$WEBUI_PID" != "" ]; then
+    top -b -n 1 -p $WEBUI_PID
+    echo "Pipeline 2 Web UI PID: $WEBUI_PID"
+
+else
+    top -b -n 1 -p $ENGINE_PID,$WEBUI_PID
+    echo "Pipeline 2 Engine PID: $ENGINE_PID"
+    echo "Pipeline 2 Web UI PID: $WEBUI_PID"
+fi
+fi
+fi
+
 exit 0
+

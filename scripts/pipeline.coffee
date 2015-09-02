@@ -15,9 +15,9 @@ module.exports = (robot) ->
     msg.send "Checking Pipeline 2 server load..."
     load = getLoad msg, (load) ->
       msg.send "Pipeline 2 engine CPU: "+load.engine.cpu+" %"
-      msg.send "Pipeline 2 engine Memory: "+load.engine.mem+" %"
-      msg.send "Pipeline 2 engine CPU: "+load.webui.cpu+" %"
-      msg.send "Pipeline 2 engine Memory: "+load.webui.mem+" %"
+      msg.send "Pipeline 2 engine memory: "+load.engine.mem+" %"
+      msg.send "Pipeline 2 web ui CPU: "+load.webui.cpu+" %"
+      msg.send "Pipeline 2 web ui memory: "+load.webui.mem+" %"
   
   getLoad = (msg, callback) ->
     child_process.exec "nproc", (error, stdout, stderr) ->

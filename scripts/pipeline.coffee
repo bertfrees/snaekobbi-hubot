@@ -76,19 +76,21 @@ module.exports = (robot) ->
     # could run scripts with something like this probably:
     # build = spawn '/bin/bash', ['test.sh']
   
-  # this runs every 10 seconds and demonstrates how to send messages to channels
+  # this starts a new load monitor every 5 minutes
   setInterval () ->
-    killIfContinouslyAbove 300
-  , 3000
+    killIfOnAverageAbove 300
+  , 300000
 
-  killIfContinouslyAbove = (timeRemaining, timeRunning = 0) ->
+  killIfOnAverageAbove = (timeRemaining, timeRunning = 0, average = 0, iterations = 0) ->
     getLoad "", (load) ->
-      if load.engine.cpu > 90
-        if timeRemaining <= 0
-          robot.adapter.send {room:'test'}, "CPU load has been over 90% for "+timeRunning+" seconds..."
+      average = ( average * iterations + load.engine.cpu ) / ( iterations + 1 )
+      if timeRemaining <= 0
+        robot.adapter.send {room:'test'}, "Average CPU load for the last 5 minutes is: "+average+" %"
+        if average > 70
+          robot.adapter.send {room:'test'}, "CPU load has been on average above 70% for the last 5 minutes..."
           robot.adapter.send {room:'test'}, "TODO: restart Pipeline 2 here if this trigger seems to correlate with Pipeline 2 having crashed"
-        else
-          setTimeout () ->
-            killIfContinouslyAbove timeRemaining - 1, timeRunning + 1
-          , 1000
+      else
+        setTimeout () ->
+          killIfOnAverageAbove timeRemaining - 1, timeRunning + 1, average, iterations + 1
+        , 1000
 

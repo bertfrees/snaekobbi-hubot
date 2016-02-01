@@ -3,6 +3,7 @@
 #
 # Commands:
 #   hubot pipeline server load - Reply back with the server load
+#   hubot pipeline get URL - Reply back with the response from the given Web API path
 #
 # Author:
 #   Jostein Austvik Jacobsen <josteinaj@gmail.com>
@@ -18,6 +19,16 @@ module.exports = (robot) ->
       msg.send "Pipeline 2 engine memory: "+load.engine.mem+" %"
       msg.send "Pipeline 2 web ui CPU: "+load.webui.cpu+" %"
       msg.send "Pipeline 2 web ui memory: "+load.webui.mem+" %"
+
+  robot.respond /pipeline get (.*)/i, (msg) ->
+    url = "http://localhost:8181/ws"+msg.match[1]
+    msg.send "GETing "+url+"..."
+    robot.http(url).get() (err, res, body) ->
+      if err
+        msg.send "Error: "+err
+      else
+        msg.send "Response code: "+res.statusCode
+        msg.send "body: [\n"+body+"\n]"
   
   getLoad = (msg, callback) ->
     child_process.exec "nproc", (error, stdout, stderr) ->

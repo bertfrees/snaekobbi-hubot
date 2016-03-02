@@ -7,7 +7,7 @@ fi
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 sudo service pipeline2d start
-sudo service pipeline2-webuid start
+#sudo service pipeline2-webuid start
 
 if [[ "$NO_MESSAGES" == "" ]] ; then
   echo "Ok, I'm done. If it didn't work, try 'restart' instead."

@@ -34,7 +34,7 @@ echo "Using branch '$BRANCH'"
 
 cd "$HOME/system"
 git fetch --all 2>&1
-git checkout $BRANCH 2>&
+git checkout $BRANCH 2>&1
 if [[ "$?" -ne "0" ]]; then
   echo "git pull failed"
   exit 1

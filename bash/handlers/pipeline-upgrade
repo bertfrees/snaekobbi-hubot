@@ -8,14 +8,13 @@ cd "$DIR"
 NO_MESSAGES=1 ./pipeline-stop
 
 # Backup database and about page
-#TIMESTAMP="`date --utc --rfc-3339=seconds | sed 's/+.*//' | sed 's/ /_/g' | sed 's/[^0-9_]/-/g'`"
-#if [[ -d "/var/opt/daisy-pipeline2-webui/webui/dp2webui" ]] ; then
-#  mkdir -p "$HOME/webui-db-backups"
-#  sudo cp -r "/var/opt/daisy-pipeline2-webui/webui/dp2webui" "$HOME/webui-db-backups/dp2webui.bak-$TIMESTAMP"
-#  sudo cp "/opt/daisy-pipeline2-webui/about.html" "$HOME/webui-db-backups/about.html-$TIMESTAMP"
-#  sudo chown -R $USER:$USER "$HOME/webui-db-backups/dp2webui.bak-$TIMESTAMP"
-#  sudo chown -R $USER:$USER "$HOME/webui-db-backups/about.html-$TIMESTAMP"
-#fi
+TIMESTAMP="`date --utc --rfc-3339=seconds | sed 's/+.*//' | sed 's/ /_/g' | sed 's/[^0-9_]/-/g'`"
+if [[ -d "/usr/share/daisy-pipeline2-webui/data" ]] ; then
+  mkdir -p "$HOME/webui-data-backups"
+  sudo cp -r "/usr/share/daisy-pipeline2-webui/data" "$HOME/webui-data-backups/bak-$TIMESTAMP"
+  sudo chown -R $USER:$USER "$HOME/webui-data-backups/dp2webui.bak-$TIMESTAMP"
+  sudo chown -R $USER:$USER "$HOME/webui-data-backups/about.html-$TIMESTAMP"
+fi
 
 if [[ ! -d "$HOME/system" ]] ; then
   cd $HOME && git clone https://github.com/snaekobbi/system.git 2>&1
@@ -73,15 +72,6 @@ fi
 
 cd "$DIR"
 NO_MESSAGES=1 ./pipeline-stop
-
-# Restore database and about page
-#if [[ -d "$HOME/webui-db-backups/dp2webui.bak-$TIMESTAMP" ]] ; then
-#  sudo rm -r "/var/opt/daisy-pipeline2-webui/webui/dp2webui"
-#  sudo cp -r "$HOME/webui-db-backups/dp2webui.bak-$TIMESTAMP" "/var/opt/daisy-pipeline2-webui/webui/dp2webui"
-#  sudo cp -r "$HOME/webui-db-backups/about.html-$TIMESTAMP" "/opt/daisy-pipeline2-webui/about.html"
-#  sudo chown -R pipeline2-webui:pipeline2-webui "/var/opt/daisy-pipeline2-webui/webui/dp2webui"
-#  sudo chown -R pipeline2-webui:pipeline2-webui "/opt/daisy-pipeline2-webui/about.html"
-#fi
 
 cd "$DIR"
 NO_MESSAGES=1 ./pipeline-start

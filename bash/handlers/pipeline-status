@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sudo service pipeline2d status
-sudo service pipeline2-webuid status
+sudo service daisy-pipeline2-webui status
 
 ENGINE_PID="`ps aux | grep -v grep | grep daisy | grep felix.jar | awk '{print $2}'`"
 WEBUI_PID="`ps aux | grep -v grep | grep daisy | grep java | grep webui | awk '{print $2}'`"

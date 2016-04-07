@@ -97,11 +97,11 @@ module.exports = (robot) ->
       average = ( average * iterations + load.engine.cpu ) / ( iterations + 1 )
       if timeRemaining <= 0
         if average > 70
-          robot.adapter.send {room:'general'}, "Average CPU load for the last 5 minutes is "+average+" %"
-          robot.adapter.send {room:'general'}, "CPU load has been on average above 70% for the last 5 minutes, Pipeline 2 has most likely crashed"
-          robot.adapter.send {room:'general'}, "I will try to restart Pipeline 2 now to fix this..."
+          robot.adapter.send {room:'server'}, "Average CPU load for the last 5 minutes is "+average+" %"
+          robot.adapter.send {room:'server'}, "CPU load has been on average above 70% for the last 5 minutes, Pipeline 2 has most likely crashed"
+          robot.adapter.send {room:'server'}, "I will try to restart Pipeline 2 now to fix this..."
           child_process.exec "NO_MESSAGES=1 ./pipeline-stop ; NO_MESSAGES=1 ./pipeline-start", { cwd: process.env.HOME+"/hubot/bash/handlers/" }, (error, stdout, stderr) ->
-            robot.adapter.send {room:'general'}, "Ok, I'm done. Let's hope things run more smoothly from now on."
+            robot.adapter.send {room:'server'}, "Ok, I'm done. Let's hope things run more smoothly from now on."
       else
         setTimeout () ->
           killIfOnAverageAbove timeRemaining - 1, timeRunning + 1, average, iterations + 1

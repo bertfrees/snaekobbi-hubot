@@ -11,7 +11,7 @@ if [[ -e "$HOME/config/slack.webhook" ]] ; then
     BOT_ICON="https://s3-us-west-2.amazonaws.com/slack-files2/avatars/2015-08-10/8878694496_9e4e1c78db905c4d3396_48.jpg"
   fi
   if [[ "$ANNOUNCE_CHANNEL" == "" ]] ; then
-    ANNOUNCE_CHANNEL="#general"
+    ANNOUNCE_CHANNEL="#server"
   fi
   SLACK_WEBHOOK="`cat $HOME/config/slack.webhook | head -n 1`"
   JSON="{\"channel\": \"$ANNOUNCE_CHANNEL\", \"username\": \"$BOT_NAME\", \"icon_url\": \"$BOT_ICON\", \"text\": \"I'm shutting down...\"}"

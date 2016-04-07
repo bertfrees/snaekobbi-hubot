@@ -30,7 +30,7 @@ if [[ "$BOT_ICON" == "" ]] ; then
 fi
 
 if [[ "$ANNOUNCE_CHANNEL" == "" ]] ; then
-  ANNOUNCE_CHANNEL="#general"
+  ANNOUNCE_CHANNEL="#server"
 fi
 
 # Announce join if slackbot webhook is defined

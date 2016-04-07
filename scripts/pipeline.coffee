@@ -17,8 +17,10 @@ module.exports = (robot) ->
     load = getLoad msg, (load) ->
       msg.send "Pipeline 2 engine CPU: "+load.engine.cpu+" %"
       msg.send "Pipeline 2 engine memory: "+load.engine.mem+" %"
+      msg.send "Pipeline 2 engine latency: "+load.engine.latency+" %"
       msg.send "Pipeline 2 web ui CPU: "+load.webui.cpu+" %"
       msg.send "Pipeline 2 web ui memory: "+load.webui.mem+" %"
+      msg.send "Pipeline 2 web ui latency: "+load.webui.latency+" %"
 
   robot.respond /pipeline get (.*)/i, (msg) ->
     url = "http://localhost:8181/ws"+msg.match[1]
@@ -52,11 +54,13 @@ module.exports = (robot) ->
             callback {
               engine: {
                 "cpu": engineCpu,
-                "mem": engineMem
+                "mem": engineMem,
+                "latency": engineLatency
               },
               webui: {
                 "cpu": webuiCpu,
-                "mem": webuiMem
+                "mem": webuiMem,
+                "latency": webuiLatency
               }
             }
           command += " | grep . | tail -n "+numberOfProcs+" | awk '{print $1 \" \" $9 \" \" $10}'"
@@ -73,16 +77,22 @@ module.exports = (robot) ->
               else if split[0] == webuiPid
                 webuiCpu = +split[1] / nproc
                 webuiMem = +split[2]
-            callback {
-              engine: {
-                "cpu": engineCpu,
-                "mem": engineMem
-              },
-              webui: {
-                "cpu": webuiCpu,
-                "mem": webuiMem
-              }
-            }
+            child_process.exec 'curl -s -o /dev/null -w "%{time_total}\n" localhost:8181/ws/alive', (error, stdout, stderr) ->
+              engineLatency = stdout
+              child_process.exec 'curl -s -o /dev/null -w "%{time_total}\n" localhost:9000/alive', (error, stdout, stderr) ->
+                webuiLatency = stdout
+                callback {
+                  engine: {
+                    "cpu": engineCpu,
+                    "mem": engineMem,
+                    "latency": engineLatency
+                  },
+                  webui: {
+                    "cpu": webuiCpu,
+                    "mem": webuiMem,
+                    "latency": webuiLatency
+                  }
+                }
   
     # could run scripts with something like this probably:
     # build = spawn '/bin/bash', ['test.sh']

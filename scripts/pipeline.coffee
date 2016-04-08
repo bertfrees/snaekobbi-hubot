@@ -17,10 +17,10 @@ module.exports = (robot) ->
     load = getLoad msg, (load) ->
       msg.send "Pipeline 2 engine CPU: "+load.engine.cpu+" %"
       msg.send "Pipeline 2 engine memory: "+load.engine.mem+" %"
-      msg.send "Pipeline 2 engine latency: "+load.engine.latency+" %"
+      msg.send "Pipeline 2 engine latency: "+load.engine.latency+" s"
       msg.send "Pipeline 2 web ui CPU: "+load.webui.cpu+" %"
       msg.send "Pipeline 2 web ui memory: "+load.webui.mem+" %"
-      msg.send "Pipeline 2 web ui latency: "+load.webui.latency+" %"
+      msg.send "Pipeline 2 web ui latency: "+load.webui.latency+" s"
 
   robot.respond /pipeline get (.*)/i, (msg) ->
     url = "http://localhost:8181/ws"+msg.match[1]

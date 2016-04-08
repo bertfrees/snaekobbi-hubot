@@ -1,52 +1,58 @@
 #!/bin/bash
 
+SYSTEM_PART="$1"
+
 if [[ "$NO_MESSAGES" == "" ]] ; then
-  echo "Stopping Pipeline 2..."
+  echo "Stopping Pipeline 2 $SYSTEM_PART..."
 fi
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-if [[ "`service --status-all 2>&1 | grep 'pipeline2d' | wc -l`" -gt "0" ]] ; then
-  sudo service pipeline2d stop
-  if [[ "$?" -eq "0" ]]; then
-    echo "pipeline2d service stopped"
+if [[ "$SYSTEM_PART" = "" ]] || [[ "$SYSTEM_PART" = "engine" ]]; then
+  if [[ "`service --status-all 2>&1 | grep 'pipeline2d' | wc -l`" -gt "0" ]] ; then
+    sudo service pipeline2d stop
+    if [[ "$?" -eq "0" ]]; then
+      echo "pipeline2d service stopped"
+    else
+      echo "failed to stop pipeline2d service"
+      exit 1
+    fi
   else
-    echo "failed to stop pipeline2d service"
-    exit 1
+    echo "service pipeline2d does not exist"
   fi
-else
-  echo "service pipeline2d does not exist"
 fi
 
-if [[ "`service --status-all 2>&1 | grep 'daisy-pipeline2-webui' | wc -l`" -gt "0" ]] ; then
-  sudo service daisy-pipeline2-webui stop
+if [[ "$SYSTEM_PART" = "" ]] || [[ "$SYSTEM_PART" = "webui" ]]; then
+  if [[ "`service --status-all 2>&1 | grep 'daisy-pipeline2-webui' | wc -l`" -gt "0" ]] ; then
+    sudo service daisy-pipeline2-webui stop
+    sleep 3
+    WEBUI_PID="`ps axo pid,command | grep RUNNING_PID | grep -v grep | awk '{print $1}' | head -n 1`"
+    if [[ "`echo $WEBUI_PID | grep "^[0-9][0-9]*$" | wc -l`" -eq "1" ]] ; then
+      sudo kill $WEBUI_PID
+    fi
+    sudo rm -f /var/run/daisy-pipeline2-webui/play.pid
+    if [[ "$?" -eq "0" ]]; then
+      echo "daisy-pipeline2-webui service stopped"
+    else
+      echo "failed to stop daisy-pipeline2-webui service"
+      exit 1
+    fi
+  else
+    echo "service daisy-pipeline2-webui does not exist"
+  fi
+
   sleep 3
-  WEBUI_PID="`ps axo pid,command | grep RUNNING_PID | grep -v grep | awk '{print $1}' | head -n 1`"
-  if [[ "`echo $WEBUI_PID | grep "^[0-9][0-9]*$" | wc -l`" -eq "1" ]] ; then
-    sudo kill $WEBUI_PID
+  if [[ "`service --status-all 2>&1 | grep 'daisy-pipeline2-webui' | grep + | wc -l`" -eq "0" ]] ; then
+    WEBUI_PID="`ps axo pid,command | grep pipeline2-webui | grep -v grep | awk '{print $1}' | head -n 1`"
+    if [[ "`echo $WEBUI_PID | grep "^[0-9][0-9]*$" | wc -l`" -eq "1" ]] ; then
+      sudo kill $WEBUI_PID
+    fi
+    sudo rm -f /var/run/daisy-pipeline2-webui/play.pid
   fi
-  sudo rm -f /var/run/daisy-pipeline2-webui/play.pid
-  if [[ "$?" -eq "0" ]]; then
-    echo "daisy-pipeline2-webui service stopped"
-  else
-    echo "failed to stop daisy-pipeline2-webui service"
-    exit 1
-  fi
-else
-  echo "service daisy-pipeline2-webui does not exist"
-fi
-
-sleep 3
-if [[ "`service --status-all 2>&1 | grep 'daisy-pipeline2-webui' | grep + | wc -l`" -eq "0" ]] ; then
-  WEBUI_PID="`ps axo pid,command | grep pipeline2-webui | grep -v grep | awk '{print $1}' | head -n 1`"
-  if [[ "`echo $WEBUI_PID | grep "^[0-9][0-9]*$" | wc -l`" -eq "1" ]] ; then
-    sudo kill $WEBUI_PID
-  fi
-  sudo rm -f /var/run/daisy-pipeline2-webui/play.pid
 fi
 
 if [[ "$NO_MESSAGES" == "" ]] ; then
-  echo "Pipeline 2 should be stopped now."
+  echo "Pipeline 2 $SYSTEM_PART should be stopped now."
 fi
 
 exit 0

@@ -1,13 +1,20 @@
 #!/bin/bash
 
+SYSTEM_PART="$1"
+
 if [[ "$NO_MESSAGES" == "" ]] ; then
-  echo "Excellent choice; I will start Pipeline 2 for you..."
+  echo "Excellent choice; I will start Pipeline 2 $SYSTEM_PART for you..."
 fi
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-sudo service pipeline2d start
-sudo service daisy-pipeline2-webui start
+if [[ "$SYSTEM_PART" = "" ]] || [[ "$SYSTEM_PART" = "engine" ]]; then
+  sudo service pipeline2d start
+fi
+
+if [[ "$SYSTEM_PART" = "" ]] || [[ "$SYSTEM_PART" = "webui" ]]; then
+  sudo service daisy-pipeline2-webui start
+fi
 
 if [[ "$NO_MESSAGES" == "" ]] ; then
   echo "Ok, I'm done. If it didn't work, try 'restart' instead."

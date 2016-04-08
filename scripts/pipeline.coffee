@@ -53,14 +53,14 @@ module.exports = (robot) ->
           else
             callback {
               engine: {
-                "cpu": engineCpu,
-                "mem": engineMem,
-                "latency": engineLatency
+                "cpu": -1,
+                "mem": -1,
+                "latency": -1
               },
               webui: {
-                "cpu": webuiCpu,
-                "mem": webuiMem,
-                "latency": webuiLatency
+                "cpu": -1,
+                "mem": -1,
+                "latency": -1
               }
             }
           command += " | grep . | tail -n "+numberOfProcs+" | awk '{print $1 \" \" $9 \" \" $10}'"
@@ -77,10 +77,14 @@ module.exports = (robot) ->
               else if split[0] == webuiPid
                 webuiCpu = +split[1] / nproc
                 webuiMem = +split[2]
-            child_process.exec 'curl -s -o /dev/null -w "%{time_total}\n" localhost:8181/ws/alive', (error, stdout, stderr) ->
-              engineLatency = stdout
-              child_process.exec 'curl -s -o /dev/null -w "%{time_total}\n" localhost:9000/alive', (error, stdout, stderr) ->
-                webuiLatency = stdout
+            child_process.exec 'curl -s -o /dev/null -w "%{http_code};%{time_total}\n" localhost:8181/ws/alive', (error, stdout, stderr) ->
+              engineLatency = "unreachable"
+              if stdout.split(";")[0] == "200"
+                engineLatency = stdout.split(";")[1].replace(/,/,".")
+              child_process.exec 'curl -s -o /dev/null -w "%{http_code};%{time_total}\n" localhost:9000/alive', (error, stdout, stderr) ->
+                webuiLatency = "unreachable"
+                if stdout.split(";")[0] == "200"
+                  webuiLatency = stdout.split(";")[1].replace(/,/,".")
                 callback {
                   engine: {
                     "cpu": engineCpu,

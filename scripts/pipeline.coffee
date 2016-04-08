@@ -105,17 +105,21 @@ module.exports = (robot) ->
   setInterval () ->
     killIfOnAverageAbove 300
   , 300000
+  
+  # this checks the latency every 2 minutes
+  setInterval () ->
+    if not(typeof load.engine.latency is 'number') or load.engine.latency > 30.0
+      robot.adapter.send {room:'server'}, "Pipeline 2 Engine is unreachable (latency="+load.engine.latency+"); restarting the Engine..."
+      child_process.exec "NO_MESSAGES=1 ./pipeline-stop engine ; NO_MESSAGES=1 ./pipeline-start engine", { cwd: process.env.HOME+"/hubot/bash/handlers/" }, (error, stdout, stderr) ->
+        robot.adapter.send {room:'server'}, "System restart complete."
+    if not(typeof load.webui.latency is 'number') or load.webui.latency > 30.0
+      robot.adapter.send {room:'server'}, "Pipeline 2 Web UI is unreachable (latency="+load.webui.latency+"); restarting the Web UI..."
+      child_process.exec "NO_MESSAGES=1 ./pipeline-stop webui ; NO_MESSAGES=1 ./pipeline-start webui", { cwd: process.env.HOME+"/hubot/bash/handlers/" }, (error, stdout, stderr) ->
+        robot.adapter.send {room:'server'}, "System restart complete."
+  , 180000
 
   killIfOnAverageAbove = (timeRemaining, timeRunning = 0, average = 0, iterations = 0) ->
     getLoad "", (load) ->
-      if not(typeof load.engine.latency is 'number') or load.engine.latency > 10.0
-        robot.adapter.send {room:'server'}, "Pipeline 2 Engine is unreachable (latency="+load.engine.latency+"); restarting the Engine..."
-        child_process.exec "NO_MESSAGES=1 ./pipeline-stop engine ; NO_MESSAGES=1 ./pipeline-start engine", { cwd: process.env.HOME+"/hubot/bash/handlers/" }, (error, stdout, stderr) ->
-          robot.adapter.send {room:'server'}, "System restart complete."
-      if not(typeof load.webui.latency is 'number') or load.webui.latency > 10.0
-        robot.adapter.send {room:'server'}, "Pipeline 2 Web UI is unreachable (latency="+load.webui.latency+"); restarting the Web UI..."
-        child_process.exec "NO_MESSAGES=1 ./pipeline-stop webui ; NO_MESSAGES=1 ./pipeline-start webui", { cwd: process.env.HOME+"/hubot/bash/handlers/" }, (error, stdout, stderr) ->
-          robot.adapter.send {room:'server'}, "System restart complete."
       average = ( average * iterations + load.engine.cpu ) / ( iterations + 1 )
       if timeRemaining <= 0
         if average > 70

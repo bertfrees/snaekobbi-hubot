@@ -77,7 +77,7 @@ module.exports = (robot) ->
               else if split[0] == webuiPid
                 webuiCpu = +split[1] / nproc
                 webuiMem = +split[2]
-            child_process.exec 'curl -s -o /dev/null -w "%{http_code};%{time_total}\n" localhost:8181/ws/alive', (error, stdout, stderr) ->
+            child_process.exec 'curl -s -o /dev/null -w "%{http_code};%{time_total}\n" localhost:8181/ws/jobs', (error, stdout, stderr) ->
               engineLatency = "unreachable"
               if stdout.split('\n')[0].split(";")[0] == "200"
                 engineLatency = +(stdout.split('\n')[0].split(";")[1].replace(/,/,"."))

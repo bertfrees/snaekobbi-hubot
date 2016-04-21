@@ -77,11 +77,11 @@ module.exports = (robot) ->
               else if split[0] == webuiPid
                 webuiCpu = +split[1] / nproc
                 webuiMem = +split[2]
-            child_process.exec 'curl -s -o /dev/null -w "%{http_code};%{time_total}\n" localhost:8181/ws/jobs', (error, stdout, stderr) ->
+            child_process.exec 'curl -s -o /dev/null --max-time 30 -w "%{http_code};%{time_total}\n" localhost:8181/ws/jobs | grep ";"', (error, stdout, stderr) ->
               engineLatency = "unreachable"
               if stdout.split('\n')[0].split(";")[0] == "200"
                 engineLatency = +(stdout.split('\n')[0].split(";")[1].replace(/,/,"."))
-              child_process.exec 'curl -s -o /dev/null -w "%{http_code};%{time_total}\n" localhost:9000/alive', (error, stdout, stderr) ->
+              child_process.exec 'curl -s -o /dev/null --max-time 30 -w "%{http_code};%{time_total}\n" localhost:9000/alive | grep ";"', (error, stdout, stderr) ->
                 webuiLatency = "unreachable"
                 if stdout.split('\n')[0].split(";")[0] == "200"
                   webuiLatency = +(stdout.split('\n')[0].split(";")[1].replace(/,/,"."))

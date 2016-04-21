@@ -9,9 +9,9 @@ NO_MESSAGES=1 ./pipeline-stop
 
 # Backup database and about page
 TIMESTAMP="`date --utc --rfc-3339=seconds | sed 's/+.*//' | sed 's/ /_/g' | sed 's/[^0-9_]/-/g'`"
-if [[ -d "/usr/share/daisy-pipeline2-webui/data" ]] ; then
+if [[ -d "/var/opt/daisy-pipeline2-webui" ]] ; then
   mkdir -p "$HOME/webui-data-backups"
-  sudo cp -r "/usr/share/daisy-pipeline2-webui/data" "$HOME/webui-data-backups/bak-$TIMESTAMP"
+  sudo cp -r "/var/opt/daisy-pipeline2-webui" "$HOME/webui-data-backups/bak-$TIMESTAMP"
   sudo chown -R $USER:$USER "$HOME/webui-data-backups/dp2webui.bak-$TIMESTAMP"
   sudo chown -R $USER:$USER "$HOME/webui-data-backups/about.html-$TIMESTAMP"
 fi

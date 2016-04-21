@@ -10,10 +10,20 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
 if [[ "$SYSTEM_PART" = "" ]] || [[ "$SYSTEM_PART" = "engine" ]]; then
   sudo service pipeline2d start
+  if [[ "$?" -eq "0" ]]; then
+    echo "pipeline2d service started"
+  else
+    echo "failed to start pipeline2d service"
+  fi
 fi
 
 if [[ "$SYSTEM_PART" = "" ]] || [[ "$SYSTEM_PART" = "webui" ]]; then
   sudo service daisy-pipeline2-webui start
+  if [[ "$?" -eq "0" ]]; then
+    echo "daisy-pipeline2-webui service started"
+  else
+    echo "failed to start daisy-pipeline2-webui service"
+  fi
 fi
 
 if [[ "$NO_MESSAGES" == "" ]] ; then
